@@ -1,26 +1,40 @@
 import { useState } from 'react';
+import { PermissionsAndroid } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
 
 export function useBleplx() {
+  // Android Bluetooth Permission
+  async function requestLocationPermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        {
+          title: 'Location permission for bluetooth scanning',
+          message: 'Grant location permission to allow the app to scan for Bluetooth devices',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Location permission for bluetooth scanning granted');
+      } else {
+        console.log('Location permission for bluetooth scanning denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+
+  requestLocationPermission();
+
   const peripherals = new Map();
   const [isScanning, setIsScanning] = useState(false);
-  const [connectedDevices, setConnectedDevices] = useState([]);
-  const [discoveredDevices, setDiscoveredDevices] = useState<string[] | null>([]);
-  console.log('ble plx loaded');
+  const [scannedDevices, setScannedDevices] = useState<string[] | null>([]);
+  const [connectedDevice, setConnectedDevice] = useState([]);
+  const [selectedDevice, setSelectedDevice] = useState('');
 
   const manager = new BleManager();
-  console.log('manager');
-  // if (manager) {
-  //   manager.startDeviceScan(discoveredDevices, null, (error, scannedDevice) => {
-  //     if (error) {
-  //       console.log("error");
-  //       throw new Error(error.message);
-  //     }
-  //     console.log("scannedDevice", scannedDevice);
-  //     console.log("discoveredDevices-UUID", discoveredDevices);
-  //     //   scannedDevice && setDiscoveredDevices([...discoveredDevices, ...scannedDevice]));
-  //   });
-  // }
 
   const scanDevice = async () => {
     // const list: string[] = [];
@@ -62,5 +76,5 @@ export function useBleplx() {
 
   // requestLocationPermission();
   scanDevice();
-  return { peripherals, isScanning, connectedDevices, discoveredDevices };
+  return { peripherals, isScanning };
 }
