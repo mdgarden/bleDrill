@@ -1,6 +1,6 @@
 import React from 'react';
-import {Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
-import {Peripheral} from '../dummy/devices';
+import { Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { Peripheral } from '../dummy/devices';
 
 type ItemProps = {
   id: string;
@@ -15,7 +15,7 @@ type props = {
   selected: string;
 };
 
-const Item = ({id, title, selected, onPress}: ItemProps) => (
+const Item = ({ id, title, selected, onPress }: ItemProps) => (
   <TouchableOpacity
     onPress={() => onPress(id)}
     style={{
@@ -23,29 +23,26 @@ const Item = ({id, title, selected, onPress}: ItemProps) => (
       backgroundColor: selected ? 'darkcyan' : 'gainsboro',
     }}
     key={id}>
-    <Text style={{...styles.device, color: selected ? 'white' : 'black'}}>
-      {title}
-    </Text>
+    <Text style={{ ...styles.device, color: selected ? 'white' : 'black' }}>{title}</Text>
   </TouchableOpacity>
 );
 
-export default function DeviceList({devices, onPress, selected}: props) {
-  return (
+export default function DeviceList({ devices, onPress, selected }: props) {
+  return devices.length ? (
     <>
       <Text style={styles.scannerTitle}>검색된 장치</Text>
       <FlatList
         contentContainerStyle={styles.deviceListContainer}
         data={devices}
-        renderItem={({item}) => (
-          <Item
-            title={item.name}
-            id={item.id}
-            selected={item.id === selected}
-            onPress={onPress}
-          />
+        renderItem={({ item }) => (
+          <Item title={item.name} id={item.id} selected={item.id === selected} onPress={onPress} />
         )}
-        keyExtractor={device => device.id}
+        keyExtractor={(device) => device.id}
       />
+    </>
+  ) : (
+    <>
+      <Text style={styles.scannerTitle}>검색된 장치가 없습니다.</Text>
     </>
   );
 }
