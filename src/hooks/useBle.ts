@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PermissionsAndroid } from 'react-native';
-import { BleManager } from 'react-native-ble-plx';
+import { BleManager, Device } from 'react-native-ble-plx';
 
 export function useBleplx() {
   // Android Bluetooth Permission
@@ -26,55 +26,52 @@ export function useBleplx() {
     }
   }
 
-  requestLocationPermission();
-
   const peripherals = new Map();
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedDevices, setScannedDevices] = useState<string[] | null>([]);
-  const [connectedDevice, setConnectedDevice] = useState([]);
+  const [scannedDevices, setScannedDevices] = useState<Device[] | null>([]);
+  const [connectedDevice, setConnectedDevice] = useState('');
   const [selectedDevice, setSelectedDevice] = useState('');
 
   const manager = new BleManager();
 
   const scanDevice = async () => {
-    // const list: string[] = [];
     manager.startDeviceScan(null, null, (error, scannedUUID) => {
       console.log('Scanning...');
       console.log(scannedUUID?.name && scannedUUID);
-      // console.log(scannedUUID?.localName && scannedUUID.localName);
-      // console.log(scannedUUID, uuids);
+      setIsScanning(true);
+
       if (error) {
         console.log('error!');
         console.log(error.message);
+        setIsScanning(false);
       }
 
       if (scannedUUID?.name?.includes('Test')) {
         console.log('found!');
+        setScannedDevices([scannedUUID]);
         manager.stopDeviceScan();
+        setIsScanning(false);
       }
     });
   };
-  // "id": "C4:4E:E8:0F:22:96", "isConnectable": true, "localName": null, "manufacturerData": "LQEEAAExBQPODrCIBEDVAAAAAAAA", "mtu": 23, "name": "LE_WH-1000XM4", "overflowServiceUUIDs": null, "rssi": -57, "serviceData": {"0000fe2c-0000-1000-8000-00805f9b34fb": "ADAAAAARnQ=="}, "serviceUUIDs": null, "solicitedServiceUUIDs": null, "txPowerLevel": -21}
 
-  // const [uuids, setUuids] = React.useState([]);
-  // const requestLocationPermission = async () => {
-  //   try {
-  //     const granted = await PermissionsAndroid.request(
-  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  //     );
-  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-  //       console.log('You can use the location');
-  //       alert('You can use the location');
-  //     } else {
-  //       console.log('location permission denied');
-  //       alert('Location permission denied');
-  //     }
-  //   } catch (err) {
-  //     console.warn(err);
-  //   }
-  // };
+  const connectDevice = () => {
+    manager.connectToDevice(selectedDevice);
+    setConnectedDevice(selectedDevice);
+  };
 
-  // requestLocationPermission();
-  scanDevice();
-  return { peripherals, isScanning };
+  useEffect(() => {
+    requestLocationPermission();
+    scanDevice();
+  }, []);
+
+  return {
+    peripherals,
+    isScanning,
+    scannedDevices,
+    connectDevice,
+    selectedDevice,
+    setSelectedDevice,
+    connectedDevice,
+  };
 }
